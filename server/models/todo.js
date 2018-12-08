@@ -1,18 +1,19 @@
 const mongoose = require('mongoose')
 
-let Todo = mongoose.model('Todo', {
-    text: {
+const Todo = mongoose.model('Todo', {
+    text:{
         type: String,
-        require: true,
-        minlength: 1,
-        //ismeta tarpus vietas
-        trim: true 
+        trim: true,
+        required: true,
+        minlength: 1
+       
+        
     },
-    completed: {
+    completed:{
         type: Boolean,
         default: false
     },
-    compleatedAt: {
+    compleatedAt:{
         type: Number,
         default: null
     }
