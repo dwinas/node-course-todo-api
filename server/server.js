@@ -1,6 +1,8 @@
 var express = require('express');
 var bodyParser = require('body-parser');
 
+let {ObjectID} = require('mongodb')
+
 var {mongoose} = require('./db/mongoose');
 var {Todo} = require('./models/todo');
 var {User} = require('./models/user');
@@ -37,6 +39,27 @@ app.listen(3000, () => {
 });
 
 module.exports = {app};
+
+app.get('/todos/:id', (req, res) => {
+
+  console.log('Gautas request')
+  let id = req.params.id
+
+  if(!ObjectID.isValid(id)) {
+   return res.status(404).send('wrong id code')
+  }
+  Todo.findById(id).then((todo) => {
+
+    if(!todo) {
+      return res.status(404).send('Tokio objekto nera')
+    }
+    res.send({todo})
+  }).catch((e) => {
+    res.status(400).send(e)
+    
+  })
+
+})
 
 
 
