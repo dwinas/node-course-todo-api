@@ -1,11 +1,14 @@
-var express = require('express');
-var bodyParser = require('body-parser');
 
-let {ObjectID} = require('mongodb')
 
-var {mongoose} = require('./db/mongoose');
-var {Todo} = require('./models/todo');
-var {User} = require('./models/user');
+const _ = require('lodash')
+const express = require('express');
+const bodyParser = require('body-parser');
+
+const {ObjectID} = require('mongodb')
+
+const {mongoose} = require('./db/mongoose');
+const {Todo} = require('./models/todo');
+const {User} = require('./models/user');
 
 var app = express();
 
@@ -36,9 +39,6 @@ app.get('/todos', (req, res) => {
     })
 })
 
-app.listen(port, () => {
-  console.log('Started on port', port);
-});
 
 module.exports = {app};
 
@@ -67,20 +67,63 @@ app.delete('/todos/:id', (req, res) => {
   const id = req.params.id
 
   if (!ObjectID.isValid(id)) {
-    return res.status(400).send('Wrong id code')
+    return res.status(404).send('Wrong id code')
   }
 
-  Todo.findByIdAndRemove(id).then((doc) => {
+  Todo.findByIdAndRemove(id).then((todo) => {
 
-    if (!doc) {
+    if (!todo) {
       return res.status(404).send('Object not found')
     }
 
-    res.send(doc)
+    res.send({todo})
   }).catch((e) => {
-    res.status(400).send(e)
+    res.status(400).send()
   })
 })
+
+app.patch('/todos/:id', (req, res) => {
+
+  const id = req.params.id
+
+  let body = _.pick(req.body,['text', 'completed'])
+
+  if(!ObjectID.isValid(id)){
+    return res.status(404).send
+  }
+  if(_.isBoolean(body.completed) && body.completed){
+
+    body.compleatedAt = new Date().getTime()
+  } else{
+    body.completed = false
+    body.compleatedAt = null
+
+  }
+  Todo.findOneAndUpdate(id, {
+
+    $set:{
+      completed: body.completed,
+      compleatedAt: body.compleatedAt,
+      text: body.text
+
+    }
+  }, {new: true}).then((todo) =>{
+
+    if (!todo) {
+      return res.status(404).send()
+    }
+    res.send({todo})
+
+  }).catch((e) => {res.status(400).send()})
+  
+
+
+})
+
+
+app.listen(port, () => {
+  console.log('Started on port', port);
+});
 
 
 
