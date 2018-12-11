@@ -44,7 +44,6 @@ module.exports = {app};
 
 app.get('/todos/:id', (req, res) => {
 
-  console.log('Gautas request')
   let id = req.params.id
 
   if(!ObjectID.isValid(id)) {
@@ -97,6 +96,7 @@ app.patch('/todos/:id', (req, res) => {
   } else{
     body.completed = false
     body.compleatedAt = null
+    console.log('Cia buvom', body.compleatedAt)
 
   }
   Todo.findOneAndUpdate(id, {
@@ -116,8 +116,6 @@ app.patch('/todos/:id', (req, res) => {
 
   }).catch((e) => {res.status(400).send()})
   
-
-
 })
 
 
