@@ -9,7 +9,7 @@ const _ = require('lodash')
 const UserSchema = new mongoose.Schema({
     email: {
         type: String,
-        require: true,
+        required: true,
         minlength: 1,
         trim: true,
         unique: true,
@@ -29,11 +29,11 @@ const UserSchema = new mongoose.Schema({
     tokens: [{
         access: {
             type: String,
-            require: true
+            required: true
         },
         token: {
             type: String,
-            require: true
+            required: true
         }
     }]
 })
@@ -45,15 +45,35 @@ UserSchema.methods.toJSON = function () {
     return _.pick(userObject, ['_id', 'email'])
 }
 
+// Generuojam tokena
 UserSchema.methods.generateAuthToken = function (){
     let user = this
-    const access = 'auth'
-    let token = jwt.sign({_id: user._id.toHexString },'abc123').toString()
-
+    let access = 'auth'
+    let token = jwt.sign({_id: user._id.toHexString(), access },'abc123').toString()
     user.tokens = user.tokens.concat([{access, token}])
 
     return user.save().then(()=>{
         return token
+    })
+}
+
+UserSchema.statics.findByToken = function (token) {
+
+    let User = this
+    let decoded
+    try{
+        decoded = jwt.verify(token,'abc123')
+    }catch (e){
+        return Promise.reject()
+        // new Promise((resolve, reject) =>{
+        //     reject()
+        // })
+    }
+    console.log('dekoduotas', decoded)
+    return User.findOne({
+        _id: decoded._id,
+        'tokens.token':token,
+        'tokens.access': 'auth'
     })
 }
 
